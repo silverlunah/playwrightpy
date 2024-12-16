@@ -26,4 +26,4 @@ There are three test cases included in this script and they can be run each usin
 
 Login and logout are simple test cases, but the checkPrices test case includes a loop that will assert the prices of each product in the Inventory page using soft assertion against a predefined expected output variable.
 
-This test will log all the assertions executed and of course, the failing assertions. In this screenshot, I forced the test to fail by modifying the expected output of the first two items:
+This test will log all the assertions executed and of course, the failing assertions.
