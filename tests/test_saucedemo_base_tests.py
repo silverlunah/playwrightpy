@@ -10,6 +10,14 @@ load_dotenv()
 # String variables
 HOMEPAGE_URL = os.getenv("HOMEPAGE_URL")
 INVENTORY_URL = HOMEPAGE_URL + "inventory.html"
+EXPECTED_PRICES = {
+    "Sauce Labs Backpack": "$29.99",
+    "Sauce Labs Bike Light": "$9.99",
+    "Sauce Labs Bolt T-Shirt": "$15.99",
+    "Sauce Labs Fleece Jacket": "$49.99",
+    "Sauce Labs Onesie": "$7.99",
+    "Test.allTheThings() T-Shirt (Red)": "$15.99"
+}
 
 # Xpaths
 LOGIN_INPUT_XPATH = "//input[@id='user-name']"
@@ -40,11 +48,11 @@ def test_login(browser):
     # Go to the homepage URL
     browser.goto(HOMEPAGE_URL)
     
-    # Fill out login form using XPath selectors
+    # Fill out login form using XPath selector
     browser.fill(LOGIN_INPUT_XPATH, STANDARD_USER["USERNAME"])
     browser.fill(PASSWORD_INPUT_XPATH, STANDARD_USER["PASSWORD"])
     
-    # Click login button using XPath selector
+    # Click login button using CSS selector
     browser.click(SUBMIT_BUTTON_CSS)
     
     # Wait for the URL to change after login
@@ -58,20 +66,20 @@ def test_logout(browser):
     # Go to the homepage URL
     browser.goto(HOMEPAGE_URL)
     
-    # Fill in the login form using XPath selectors
+    # Fill in the login form using XPath selector
     browser.fill(LOGIN_INPUT_XPATH, STANDARD_USER["USERNAME"])
     browser.fill(PASSWORD_INPUT_XPATH, STANDARD_USER["PASSWORD"])
     
-    # Click the login button using XPath selector
+    # Click the login button using CSS selector
     browser.click(SUBMIT_BUTTON_CSS)
 
     # Wait for the inventory page to load
     browser.wait_for_url(INVENTORY_URL)
 
-    # Click hamburger menu
+    # Click hamburger menu using CSS selector
     browser.click(MENU_ICON_CSS)
     
-    # Simulate clicking the logout button using XPath selector
+    # Simulate clicking the logout button using CSS selector
     browser.click(LOGOUT_BUTTON_CSS)
     
     # Wait for the page to return to the login screen
@@ -80,61 +88,49 @@ def test_logout(browser):
     # Assert that the page title is correct after logout
     assert browser.title() == NAV_TITLE
 
-# Expected prices for products (Dictionary)
-EXPECTED_PRICES = {
-    "Sauce Labs Backpack": "$29.99",
-    "Sauce Labs Bike Light": "$9.99",
-    "Sauce Labs Bolt T-Shirt": "$15.99",
-    "Sauce Labs Fleece Jacket": "$49.99",
-    "Sauce Labs Onesie": "$7.99",
-    "Test.allTheThings() T-Shirt (Red)": "$15.99"
-}
-
 @pytest.mark.checkPrices # Assert the prices if correct according to the file
 def test_prices(browser):
     
     # Go to the homepage URL
     browser.goto(HOMEPAGE_URL)
     
-    # Fill in the login form using XPath selectors
+    # Fill in the login form using XPath selector
     browser.fill(LOGIN_INPUT_XPATH, STANDARD_USER["USERNAME"])
     browser.fill(PASSWORD_INPUT_XPATH, STANDARD_USER["PASSWORD"])
     
-    # Click the login button using XPath selector
+    # Click the login button using CSS selector
     browser.click(SUBMIT_BUTTON_CSS)
     
     # Wait for the inventory page to load
     browser.wait_for_url(INVENTORY_URL)
     
-    # Loop through all product cards
+    # Get all product cards
     products = browser.query_selector_all(PRODUCT_CARD_CSS)
 
-    # Initialize a list to store actual prices from the UI
+    # Initialize a list to store gathered prices from the UI
     ui_prices = {}
 
-    # Iterate through each product card and extract the product name and price
+    # Get product name and price for each product
     for product in products:
         title = product.query_selector(PRODUCT_TITLE_CSS).inner_text()
         price = product.query_selector(PRODUCT_PRICE_CSS).inner_text()
 
-        # Store the extracted price in the ui_prices dictionary
         ui_prices[title] = price
 
-    # Initialize a list to collect failed assertions
+    # To replicate soft assert, initialize a list to get failed assertions
     failed_assertions = []
 
     # Assert that the UI prices match the expected prices
     for product, expected_price in EXPECTED_PRICES.items():
         # Print the comparison: Value from UI vs Expected value
         ui_price = ui_prices.get(product)
-        
         print(f"Asserting [{product}] price from UI: [{ui_price}] with expected value: [{expected_price}].")
 
-        # Collect assertion failure if there is a mismatch
+        # Get assertion failure if there is a mismatch
         if ui_price != expected_price:
             failed_assertions.append(f"Price mismatch for {product}. Expected {expected_price}, but got {ui_price}")
     
-    # After the loop, if there were any failed assertions, print them out
+    # After the loop, if there's' any failed assertions, print them out
     if failed_assertions:
         for failure in failed_assertions:
             print(failure)
